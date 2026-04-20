@@ -10,7 +10,7 @@ namespace WinFormsApp1
             var regFN = new Regex(@"ФИО");
             var indexFN = 0;
 
-            var regTag = new Regex(@"Теги");
+            var regTag = new Regex(@"Категории");
             var indexTag = 0;
 
             var regRegion = new Regex(@"Регион");
@@ -176,6 +176,7 @@ namespace WinFormsApp1
                 "Не сдано" or "Не_сдано" => WorkStatus.Не_сдано,
                 "На проверке" or "На_проверке" => WorkStatus.На_проверке,
                 "Не доступно" or "Не_доступно" => WorkStatus.Не_доступно,
+                "Недоступно" => WorkStatus.Недоступно,
                 _ => throw new ArgumentException($"Неизвестный статус: {status}")
             };
         }
