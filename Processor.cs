@@ -3,8 +3,14 @@ using System.Text.RegularExpressions;
 
 namespace WinFormsApp1
 {
-    public class Processor
+    public partial class Processor
     {
+        [GeneratedRegex(@"[а-яА-ЯёЁ]{2,4}/\d{2}")]
+        private static partial Regex GroupReg();
+        
+        [GeneratedRegex(@"\bкл_([1-9][0-9]{0,2})\b")]
+        private static partial Regex ClusterReg();
+        
         public static List<Student> ReadFromFile(string filePath)
         {
             var regFN = new Regex(@"ФИО");
@@ -61,9 +67,17 @@ namespace WinFormsApp1
             foreach (var row in rows)
             {
                 var fullName = row.Cell(indexFN).GetString();
-                var group = row.Cell(indexTag).GetString();
-                group = Regex.Match(group, @"[а-яА-ЯёЁ]{2,4}/\d{2}").ToString();
+                
+                var tagRaw = row.Cell(indexTag).GetString().Split(", ");
+                var group = tagRaw
+                    .Select(gr => GroupReg().Match(gr))
+                    .FirstOrDefault(m => m.Success)?.Value;
+                var cluster = tagRaw
+                    .Select(c => ClusterReg().Match(c))
+                    .FirstOrDefault(m => m.Success)?.Value;
+                
                 var region = row.Cell(indexRegion).GetString();
+                
                 var cohort = row.Cell(indexCohort).GetString();
                 if (cohort == "0.00")
                 {
@@ -86,6 +100,7 @@ namespace WinFormsApp1
                 result.Add(new Student
                 {
                     FullName = fullName,
+                    Cluster = cluster,
                     Group = group,
                     Region = region,
                     Cohort = cohort,
@@ -103,10 +118,11 @@ namespace WinFormsApp1
 
             // Write header
             worksheet.Cell(1, 1).Value = "ФИО";
-            worksheet.Cell(1, 2).Value = "Группа";
-            worksheet.Cell(1, 3).Value = "Поток";
-            worksheet.Cell(1, 4).Value = "Регион";
-            worksheet.Cell(1, 5).Value = "Кол-во\nсданных\nработ";
+            worksheet.Cell(1, 2).Value = "Кластер";
+            worksheet.Cell(1, 3).Value = "Группа";
+            worksheet.Cell(1, 4).Value = "Поток";
+            worksheet.Cell(1, 5).Value = "Регион";
+            worksheet.Cell(1, 6).Value = "Кол-во\nсданных\nработ";
             List<string> Headers = Students[1].Results.Keys.ToList();
 
             for (int i = 0; i < Headers.Count; i++)
@@ -118,10 +134,11 @@ namespace WinFormsApp1
             for (int i = 0; i < Students.Count; i++)
             {
                 worksheet.Cell(i + 2, 1).Value = Students[i].FullName;
-                worksheet.Cell(i + 2, 2).Value = Students[i].Group;
-                worksheet.Cell(i + 2, 3).Value = Students[i].Cohort;
-                worksheet.Cell(i + 2, 4).Value = Students[i].Region;
-                worksheet.Cell(i + 2, 5).Value = Students[i].GetRatio();
+                worksheet.Cell(i + 2, 2).Value = Students[i].Cluster;
+                worksheet.Cell(i + 2, 3).Value = Students[i].Group;
+                worksheet.Cell(i + 2, 4).Value = Students[i].Cohort;
+                worksheet.Cell(i + 2, 5).Value = Students[i].Region;
+                worksheet.Cell(i + 2, 6).Value = Students[i].GetRatio();
                 List<WorkStatus> StudStat = Students[i].Results.Values.ToList();
                 for (int j = 0; j < StudStat.Count; j++)
                 {
@@ -175,8 +192,8 @@ namespace WinFormsApp1
                 "Не зачтено" or "Не_зачтено" => WorkStatus.Не_зачтено,
                 "Не сдано" or "Не_сдано" => WorkStatus.Не_сдано,
                 "На проверке" or "На_проверке" => WorkStatus.На_проверке,
-                "Не доступно" or "Не_доступно" => WorkStatus.Не_доступно,
-                "Недоступно" => WorkStatus.Недоступно,
+                "Не доступно" or "Не_доступно" or "Недоступно" => WorkStatus.Не_доступно,
+                // "Недоступно" => WorkStatus.Недоступно,
                 _ => throw new ArgumentException($"Неизвестный статус: {status}")
             };
         }
