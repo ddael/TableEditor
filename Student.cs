@@ -11,7 +11,7 @@ namespace WinFormsApp1
         public string Region { get; set; } = string.Empty;
         public string Cohort { get; set; } = string.Empty;
         public Dictionary<string, WorkStatus> Results { get; set; } 
-        public WorkStatus Status { get; set; }
+        // public WorkStatus Status { get; set; }
         
         public int GetRatio()
         {

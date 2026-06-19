@@ -127,7 +127,7 @@ namespace WinFormsApp1
 
             for (int i = 0; i < Headers.Count; i++)
             {
-                worksheet.Cell(1, 5 + (i + 1)).Value = Headers[i];
+                worksheet.Cell(1, 6 + (i + 1)).Value = Headers[i];
             }
 
             // Write data
@@ -142,7 +142,7 @@ namespace WinFormsApp1
                 List<WorkStatus> StudStat = Students[i].Results.Values.ToList();
                 for (int j = 0; j < StudStat.Count; j++)
                 {
-                    var cell = worksheet.Cell(i + 2, 5 + (j + 1));
+                    var cell = worksheet.Cell(i + 2, 6 + (j + 1));
                     cell.Value = StudStat[j].ToString().Replace("_", " ");
 
                     if (StudStat[j] == WorkStatus.Зачтено)
@@ -160,26 +160,24 @@ namespace WinFormsApp1
                 }
             }
 
-            var table = worksheet.Range(1, 1, Students.Count + 1, Headers.Count + 5).AsTable();
+            var table = worksheet.Range(1, 1, Students.Count + 1, Headers.Count + 6).AsTable();
             table.Name = "Учащиеся";
             table.ShowAutoFilter = true;
             table.Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
             table.Style.Border.SetInsideBorder(XLBorderStyleValues.Thin);
 
-            worksheet.Columns(1, 5).AdjustToContents();
+            worksheet.Columns(1, 6).AdjustToContents();
 
             worksheet.Row(1).AdjustToContents();
             worksheet.Row(1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
             worksheet.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
             worksheet.Row(1).Style.Font.Bold = true; 
 
-            worksheet.Column(2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            worksheet.Column(3).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            worksheet.Column(5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.Columns(1, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-            int lastColumn = 5 + (Students.Count > 0 ? Students[0].Results.Count : 0);
-            worksheet.Columns(6, lastColumn).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            worksheet.Columns(6, lastColumn).Width = 20;
+            int lastColumn = 7 + (Students.Count > 0 ? Students[0].Results.Count : 0);
+            worksheet.Columns(7, lastColumn).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.Columns(7, lastColumn).Width = 20;
 
             workbook.SaveAs(filePath);
         }
@@ -192,8 +190,7 @@ namespace WinFormsApp1
                 "Не зачтено" or "Не_зачтено" => WorkStatus.Не_зачтено,
                 "Не сдано" or "Не_сдано" => WorkStatus.Не_сдано,
                 "На проверке" or "На_проверке" => WorkStatus.На_проверке,
-                "Не доступно" or "Не_доступно" or "Недоступно" => WorkStatus.Не_доступно,
-                // "Недоступно" => WorkStatus.Недоступно,
+                "Не доступно" or "Не_доступно" or "Недоступно" => WorkStatus.Недоступно,
                 _ => throw new ArgumentException($"Неизвестный статус: {status}")
             };
         }

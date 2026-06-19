@@ -18,12 +18,13 @@
             Name = dialog.FileName;
             if (dialog.ShowDialog() == DialogResult.OK)
             {
-                var processor = new Processor();
+                // var processor = new Processor();
                 data = Processor.ReadFromFile(dialog.FileName);
 
                 filtered = data.Select(s => new Student
                 {
                     FullName = s.FullName,
+                    Cluster = s.Cluster,
                     Group = s.Group,
                     Cohort = s.Cohort,
                     Region = s.Region,
