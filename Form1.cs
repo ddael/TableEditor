@@ -5,7 +5,7 @@
         private List<Student> data = [];
         private List<Student> filtered = [];
 
-        private string Name =string.Empty;
+        private string Name = string.Empty;
 
         public Form1()
         {
@@ -47,7 +47,7 @@
                 return;
             }
 
-            using var dialog = new SaveFileDialog { Filter = "Excel Files|*.xlsx", FileName = Name + "_formated.xlsx" };
+            using var dialog = new SaveFileDialog { Filter = "Excel Files|*.xlsx", FileName = $"{Name}_formated.xlsx" };
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 _ = new Processor();
