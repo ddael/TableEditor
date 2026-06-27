@@ -32,6 +32,7 @@
             ExportButton = new Button();
             filteredGrid = new DataGridView();
             label1 = new Label();
+            checkBox1 = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)filteredGrid).BeginInit();
             SuspendLayout();
             // 
@@ -73,11 +74,23 @@
             label1.TabIndex = 4;
             label1.Text = "Форматированная таблица(Work in progress)";
             // 
+            // checkBox1
+            // 
+            checkBox1.AutoSize = true;
+            checkBox1.Location = new Point(299, 370);
+            checkBox1.Name = "checkBox1";
+            checkBox1.Size = new Size(189, 19);
+            checkBox1.TabIndex = 5;
+            checkBox1.Text = "Режим разбивки на кластеры";
+            checkBox1.UseVisualStyleBackColor = true;
+            checkBox1.CheckedChanged += checkBox1_CheckedChanged;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(784, 421);
+            Controls.Add(checkBox1);
             Controls.Add(label1);
             Controls.Add(filteredGrid);
             Controls.Add(ExportButton);
@@ -97,5 +110,6 @@
         private Button ExportButton;
         private DataGridView filteredGrid;
         private Label label1;
+        private CheckBox checkBox1;
     }
 }
