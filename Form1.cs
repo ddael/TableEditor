@@ -21,10 +21,9 @@ namespace WinFormsApp1
             if (!MultiFileMode)
             {
                 using var dialog = new OpenFileDialog { Filter = "Excel Files|*.xlsx;*.xls" };
-                Name = dialog.FileName;
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    // var processor = new Processor();
+                    Name = System.IO.Path.GetFileNameWithoutExtension(dialog.SafeFileName);
                     data = Processor.ReadFromFile(dialog.FileName);
 
                     filtered = data.Select(s => new Student
@@ -44,6 +43,14 @@ namespace WinFormsApp1
                     MessageBox.Show($"Импортировано записей: {data.Count}");
                 }
             }
+            else
+            {
+                //using var dialog = new OpenFileDialog { Filter = "Excel Files|*.xlsx;*.xls" };
+                //if (dialog.ShowDialog() == DialogResult.OK)
+                //{
+                //    data.AddRange(Processor.ReadFromFile(Name));
+                //}
+            }
         }
 
         private void ExportButton_Click(object sender, EventArgs e)
@@ -56,7 +63,7 @@ namespace WinFormsApp1
                     return;
                 }
 
-                using var dialog = new SaveFileDialog { Filter = "Excel Files|*.xlsx", FileName = $"{Name}_formated.xlsx" };
+                using var dialog = new SaveFileDialog { Filter = "Excel Files|*.xlsx", FileName = $"{Name}_formated" };
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     _ = new Processor();
