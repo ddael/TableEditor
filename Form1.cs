@@ -43,13 +43,35 @@ namespace WinFormsApp1
                     MessageBox.Show($"Импортировано записей: {data.Count}");
                 }
             }
+
             else
             {
-                //using var dialog = new OpenFileDialog { Filter = "Excel Files|*.xlsx;*.xls" };
-                //if (dialog.ShowDialog() == DialogResult.OK)
-                //{
-                //    data.AddRange(Processor.ReadFromFile(Name));
-                //}
+                using var dialog = new OpenFileDialog { Filter = "Excel Files|*.xlsx;*.xls", Multiselect = true };
+                if (dialog.ShowDialog() == DialogResult.OK)
+                {
+                    var fileNames = dialog.FileNames;
+
+                    foreach ( var file in fileNames )
+                    {
+                        data.AddRange(Processor.ReadFromFile(file));
+                    }
+
+                    filtered = data.Select(s => new Student
+                    {
+                        FullName = s.FullName,
+                        Cluster = s.Cluster,
+                        Group = s.Group,
+                        Cohort = s.Cohort,
+                        Region = s.Region,
+                        Results = s.Results
+                    }
+                    ).ToList();
+
+                    filteredGrid.DataSource = null;
+                    filteredGrid.DataSource = filtered;
+
+                    MessageBox.Show($"Импортировано записей: {data.Count}");
+                }
             }
         }
 
