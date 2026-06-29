@@ -202,5 +202,104 @@ namespace WinFormsApp1
                 kvp => ConvertToWorkStatus(kvp.Value)
                 );
         }
+
+        public static void WriteFilesToDir(string filePath, List<Student> Students)
+        {
+            // Формируем словарь: Ключ - Кластер, Занчение - Список учащихся в кластере
+            var groupedByCluster = Students
+                .GroupBy(student => student.Cluster)
+                .ToDictionary(grouped => grouped.Key, grouped => grouped.ToList());
+
+            foreach(var clusterKvp in groupedByCluster)
+            {
+                var cluster = clusterKvp.Key;
+                var studentsInCluster = clusterKvp.Value;
+
+                // Создаем папку кластера
+                string clusterDirectoryPath = System.IO.Path.Combine(filePath, cluster);
+                Directory.CreateDirectory(clusterDirectoryPath);
+
+                // Формируем IEnumerable список по группам внутри кластера
+                var groupsInCluster = studentsInCluster
+                    .GroupBy(student => student.Group);
+
+                foreach (var group in groupsInCluster)
+                {
+                    var groupName = group.Key;
+                    var studentsByGroup = group.ToList();
+
+                    // Формируем имя файла
+                    string FileName = $"{groupName}_{cluster}";
+                    // Путь к файлу
+                    string groupFilePath = System.IO.Path.Combine(clusterDirectoryPath, FileName);
+
+                    // Сборка таблицы
+                    using var workbook = new XLWorkbook();
+                    var worksheet = workbook.Worksheets.Add($"{cluster}");
+
+                    worksheet.Cell(1, 1).Value = "ФИО";
+                    worksheet.Cell(1, 2).Value = "Кластер";
+                    worksheet.Cell(1, 3).Value = "Группа";
+                    worksheet.Cell(1, 4).Value = "Регион";
+                    worksheet.Cell(1, 5).Value = "Кол-во\nсданных\nработ";
+                    List<string> Headers = studentsByGroup[1].Results.Keys.ToList();
+
+                    for (int i = 0; i < studentsByGroup.Count; i++)
+                    {
+                        worksheet.Cell(1, 5 + (i + 1)).Value = Headers[i];
+                    }
+
+                    for (int i = 0; i < studentsByGroup.Count; i++)
+                    {
+                        worksheet.Cell(i + 2, 1).Value = Students[i].FullName;
+                        worksheet.Cell(i + 2, 2).Value = Students[i].Cluster;
+                        worksheet.Cell(i + 2, 3).Value = Students[i].Group;
+                        worksheet.Cell(i + 2, 4).Value = Students[i].Region;
+                        worksheet.Cell(i + 2, 5).Value = Students[i].GetRatio();
+                        List<WorkStatus> StudStat = studentsByGroup[i].Results.Values.ToList();
+                        for (int j = 0; j < StudStat.Count; j++)
+                        {
+                            var cell = worksheet.Cell(i + 2, 5 + (j + 1));
+                            cell.Value = StudStat[j].ToString().Replace("_", " ");
+
+                            if (StudStat[j] == WorkStatus.Зачтено)
+                            {
+                                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#C6EFCE");
+                            }
+                            else if (StudStat[j] == WorkStatus.На_проверке)
+                            {
+                                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFEB9D");
+                            }
+                            else
+                            {
+                                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFC7CE");
+                            }
+                        }
+                    }
+
+                    var table = worksheet.Range(1, 1, studentsByGroup.Count + 1, Headers.Count + 5).AsTable();
+
+                    table.Name = "Учащиеся";
+                    table.ShowAutoFilter = true;
+                    table.Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
+                    table.Style.Border.SetInsideBorder(XLBorderStyleValues.Thin);
+
+                    worksheet.Columns(1, 5).AdjustToContents();
+
+                    worksheet.Row(1).AdjustToContents();
+                    worksheet.Row(1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+                    worksheet.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    worksheet.Row(1).Style.Font.Bold = true;
+
+                    worksheet.Columns(1, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+
+                    int lastColumn = 6 + (Students.Count > 0 ? Students[0].Results.Count : 0);
+                    worksheet.Columns(6, lastColumn).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    worksheet.Columns(6, lastColumn).Width = 20;
+
+                    workbook.SaveAs(groupFilePath);
+                }
+            }
+        }
     }
 }

@@ -85,12 +85,37 @@ namespace WinFormsApp1
                     return;
                 }
 
-                using var dialog = new SaveFileDialog { Filter = "Excel Files|*.xlsx", FileName = $"{Name}_formated" };
+                using var dialog = new SaveFileDialog
+                { 
+                    Filter = "Excel Files|*.xlsx", 
+                    FileName = $"{Name}_formated" 
+                };
+
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    _ = new Processor();
                     Processor.WriteToFile(dialog.FileName, data);
                     MessageBox.Show("Файл сохранён.");
+                }
+            }
+            else
+            {
+                if (data.Count == 0)
+                {
+                    MessageBox.Show("Нет данных для экспорта.");
+                    return;
+                }
+
+                using var folderDialog = new FolderBrowserDialog
+                {
+                    Description = "Выберите папку для создания отчетов по кластерам",
+                    InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop)
+                };
+
+                if (folderDialog.ShowDialog() == DialogResult.OK)
+                {
+                    var folder = folderDialog.SelectedPath;
+                    Processor.WriteFilesToDir(folder, data);
+                    MessageBox.Show("Работа сделана.");
                 }
             }
         }
