@@ -265,7 +265,7 @@ namespace WinFormsApp1
                     {
                         worksheet.Cell(i + 2, 1).Value = Students[i].FullName;
                         worksheet.Cell(i + 2, 2).Value = Students[i].Cluster;
-                        worksheet.Cell(i + 2, 3).Value = Students[i].Group;
+                        worksheet.Cell(i + 2, 3).Value = Students[i].GetFullGroup();
                         worksheet.Cell(i + 2, 4).Value = Students[i].Region;
                         worksheet.Cell(i + 2, 5).Value = Students[i].GetRatio();
                         List<WorkStatus> StudStat = studentsByGroup[i].Results.Values.ToList();
