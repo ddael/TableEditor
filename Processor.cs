@@ -5,8 +5,8 @@ namespace WinFormsApp1
 {
     public partial class Processor
     {
-        [GeneratedRegex(@"[а-яА-ЯёЁ]{2,4}/\d{2}")]
-        private static partial Regex GroupReg();
+        [GeneratedRegex(@"([а-яА-ЯёЁ]{2,4})/(\d{2})")]
+        private static partial Regex TagRegex();
         
         [GeneratedRegex(@"\bкл_([1-9][0-9]{0,2})\b")]
         private static partial Regex ClusterReg();
@@ -67,11 +67,21 @@ namespace WinFormsApp1
             foreach (var row in rows)
             {
                 var fullName = row.Cell(indexFN).GetString();
-                
-                var tagRaw = row.Cell(indexTag).GetString().Split(", ");
-                var group = tagRaw
-                    .Select(gr => GroupReg().Match(gr))
-                    .FirstOrDefault(m => m.Success)?.Value;
+
+                var tagRaw = row.Cell(indexTag).GetString()
+                    .Split(", ")
+                    .Select(s => s.Trim())
+                    .ToList();
+                var match = tagRaw
+                    .Select(m => TagRegex().Match(m))
+                    .FirstOrDefault(m => m.Success);
+                string tag = string.Empty;
+                int group = 0;
+                if (match is { Success : true })
+                {
+                    tag = match.Groups[1].Value;
+                    group = int.Parse(match.Groups[2].Value);
+                }
                 var cluster = tagRaw
                     .Select(c => ClusterReg().Match(c))
                     .FirstOrDefault(m => m.Success)?.Value;
@@ -102,6 +112,7 @@ namespace WinFormsApp1
                     FullName = fullName,
                     Cluster = cluster,
                     Group = group,
+                    Tag = tag,
                     Region = region,
                     Cohort = cohort,
                     Results = ConvertDictionary(results)
@@ -135,7 +146,8 @@ namespace WinFormsApp1
             {
                 worksheet.Cell(i + 2, 1).Value = Students[i].FullName;
                 worksheet.Cell(i + 2, 2).Value = Students[i].Cluster;
-                worksheet.Cell(i + 2, 3).Value = Students[i].Group;
+                worksheet.Cell(i + 2, 3).Value = Students[i].GetFullGroup();
+                Console.WriteLine(Students[i].GetFullGroup());
                 worksheet.Cell(i + 2, 4).Value = Students[i].Cohort;
                 worksheet.Cell(i + 2, 5).Value = Students[i].Region;
                 worksheet.Cell(i + 2, 6).Value = Students[i].GetRatio();

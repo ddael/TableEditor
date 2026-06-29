@@ -31,6 +31,7 @@ namespace WinFormsApp1
                         FullName = s.FullName,
                         Cluster = s.Cluster,
                         Group = s.Group,
+                        Tag = s.Tag,
                         Cohort = s.Cohort,
                         Region = s.Region,
                         Results = s.Results
@@ -61,6 +62,7 @@ namespace WinFormsApp1
                         FullName = s.FullName,
                         Cluster = s.Cluster,
                         Group = s.Group,
+                        Tag = s.Tag,
                         Cohort = s.Cohort,
                         Region = s.Region,
                         Results = s.Results
