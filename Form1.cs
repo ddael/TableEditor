@@ -115,9 +115,12 @@ namespace WinFormsApp1
 
                 if (folderDialog.ShowDialog() == DialogResult.OK)
                 {
-                    var folder = folderDialog.SelectedPath;
-                    Processor.WriteFilesToDir(folder, data);
+                    //var folder = folderDialog.SelectedPath;
+                    Processor.WriteFilesToDir(folderDialog.SelectedPath, data);
                     MessageBox.Show("Работа сделана.");
+                    data = [];
+                    filtered = [];
+                    filteredGrid.DataSource = null;
                 }
             }
         }

@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using System.Text.RegularExpressions;
 
 namespace WinFormsApp1
@@ -222,74 +223,105 @@ namespace WinFormsApp1
                 .GroupBy(student => student.Cluster)
                 .ToDictionary(grouped => grouped.Key, grouped => grouped.ToList());
 
-            foreach(var clusterKvp in groupedByCluster)
+            // Делаем суперсловарь (Кластер - Словарь(Тег - Список учащихся))
+            var filteredStudents = Students
+                .GroupBy(student => student.Cluster)
+                .ToDictionary(
+                    clusterGroup => clusterGroup.Key,
+                    clusterGroup => clusterGroup
+                        .GroupBy(student => student.Tag)
+                        .ToDictionary(
+                            tagGroup => tagGroup.Key,
+                            tagGroup => tagGroup.ToList()
+                        )
+                );
+
+            // Бежим по верхнему словарю с ключ-кластером
+            foreach(var (clusterKey, dict) in filteredStudents)
             {
-                var cluster = clusterKvp.Key;
-                var studentsInCluster = clusterKvp.Value;
+                var cluster = clusterKey;
 
                 // Создаем папку кластера
                 string clusterDirectoryPath = System.IO.Path.Combine(filePath, cluster);
                 Directory.CreateDirectory(clusterDirectoryPath);
 
-                // Формируем IEnumerable список по группам внутри кластера
-                var groupsInCluster = studentsInCluster
-                    .GroupBy(student => student.Group);
-
-                foreach (var group in groupsInCluster)
+                // Бежим по внутреннему словарю с ключ-тегом
+                foreach (var (tagKey, list) in dict)
                 {
-                    var groupName = group.Key;
-                    var studentsByGroup = group.ToList();
+                    var tag = tagKey;
+                    var studentsByTag = tag.ToList();
 
                     // Формируем имя файла
-                    string FileName = $"{groupName}_{cluster}";
+                    string FileName = $"{tag}_{cluster}";
                     // Путь к файлу
-                    string groupFilePath = System.IO.Path.Combine(clusterDirectoryPath, FileName);
+                    string tagFilePath = System.IO.Path.Combine(clusterDirectoryPath, FileName);
 
                     // Сборка таблицы
                     using var workbook = new XLWorkbook();
-                    var worksheet = workbook.Worksheets.Add($"{cluster}");
+                    var worksheet = workbook.Worksheets.Add($"{FileName}");
 
-                    worksheet.Cell(1, 1).Value = "ФИО";
-                    worksheet.Cell(1, 2).Value = "Кластер";
-                    worksheet.Cell(1, 3).Value = "Группа";
-                    worksheet.Cell(1, 4).Value = "Регион";
-                    worksheet.Cell(1, 5).Value = "Кол-во\nсданных\nработ";
-                    List<string> Headers = studentsByGroup[1].Results.Keys.ToList();
+                    int col = 1;
+                    worksheet.Cell(1, col++).Value = "ФИО";
+                    worksheet.Cell(1, col++).Value = "Кластер";
+                    worksheet.Cell(1, col++).Value = "Группа";
+                    worksheet.Cell(1, col++).Value = "Регион";
+                    worksheet.Cell(1, col++).Value = "Кол-во\nсданных\nработ";
 
-                    for (int i = 0; i < studentsByGroup.Count; i++)
+                    (int, int) WorkIndexes;
+                    WorkIndexes.Item1 = col;
+                    foreach(var workName in list[0].Results.Keys)
                     {
-                        worksheet.Cell(1, 5 + (i + 1)).Value = Headers[i];
+                        worksheet.Cell(1, col++).Value = workName;
                     }
+                    WorkIndexes.Item2 = col - 1;
 
-                    for (int i = 0; i < studentsByGroup.Count; i++)
+                    int row = 2;
+                    foreach (var stud in list)
                     {
-                        worksheet.Cell(i + 2, 1).Value = Students[i].FullName;
-                        worksheet.Cell(i + 2, 2).Value = Students[i].Cluster;
-                        worksheet.Cell(i + 2, 3).Value = Students[i].GetFullGroup();
-                        worksheet.Cell(i + 2, 4).Value = Students[i].Region;
-                        worksheet.Cell(i + 2, 5).Value = Students[i].GetRatio();
-                        List<WorkStatus> StudStat = studentsByGroup[i].Results.Values.ToList();
-                        for (int j = 0; j < StudStat.Count; j++)
+                        col = 1;
+                        worksheet.Cell(row, col++).Value = stud.FullName;
+                        worksheet.Cell(row, col++).Value = stud.Cluster;
+                        worksheet.Cell(row, col++).Value = stud.GetFullGroup();
+                        worksheet.Cell(row, col++).Value = stud.Region;
+                        worksheet.Cell(row, col++).Value = stud.GetRatio();
+
+                        foreach (var workValue in stud.Results.Values)
                         {
-                            var cell = worksheet.Cell(i + 2, 5 + (j + 1));
-                            cell.Value = StudStat[j].ToString().Replace("_", " ");
+                            var cell = worksheet.Cell(row, col++);
+                            cell.Value = workValue.ToString().Replace("_", " ");
 
-                            if (StudStat[j] == WorkStatus.Зачтено)
+                            cell.Style.Fill.BackgroundColor = workValue switch
                             {
-                                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#C6EFCE");
-                            }
-                            else if (StudStat[j] == WorkStatus.На_проверке)
-                            {
-                                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFEB9D");
-                            }
-                            else
-                            {
-                                cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFC7CE");
-                            }
+                                WorkStatus.Зачтено => XLColor.FromHtml("#C6EFCE"),
+                                WorkStatus.На_проверке => XLColor.FromHtml("#FFEB9D"),
+                                _ => XLColor.FromHtml("#FFC7CE")
+                            };
                         }
+
+                        //List<WorkStatus> StudStat = list[i].Results.Values.ToList();
+                        //for (int j = 0; j < StudStat.Count; j++)
+                        //{
+                        //    var cell = worksheet.Cell(i + 2, 5 + (j + 1));
+                        //    cell.Value = StudStat[j].ToString().Replace("_", " ");
+
+                        //    if (StudStat[j] == WorkStatus.Зачтено)
+                        //    {
+                        //        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#C6EFCE");
+                        //    }
+                        //    else if (StudStat[j] == WorkStatus.На_проверке)
+                        //    {
+                        //        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFEB9D");
+                        //    }
+                        //    else
+                        //    {
+                        //        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFC7CE");
+                        //    }
+                        //}
+                        row++;
                     }
 
-                    var table = worksheet.Range(1, 1, studentsByGroup.Count + 1, Headers.Count + 5).AsTable();
+                    // row - 1 костыль, т.к. после последней строки у нас идет еще 1 инкремент
+                    var table = worksheet.Range(1, 1, row - 1, WorkIndexes.Item2).AsTable();
 
                     table.Name = "Учащиеся";
                     table.ShowAutoFilter = true;
@@ -303,13 +335,12 @@ namespace WinFormsApp1
                     worksheet.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
                     worksheet.Row(1).Style.Font.Bold = true;
 
-                    worksheet.Columns(1, 5).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    worksheet.Columns(1, WorkIndexes.Item1 - 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-                    int lastColumn = 6 + (Students.Count > 0 ? Students[0].Results.Count : 0);
-                    worksheet.Columns(6, lastColumn).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                    worksheet.Columns(6, lastColumn).Width = 20;
+                    worksheet.Columns(WorkIndexes.Item1, WorkIndexes.Item2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    worksheet.Columns(WorkIndexes.Item1, WorkIndexes.Item2).Width = 20;
 
-                    workbook.SaveAs(groupFilePath);
+                    workbook.SaveAs(tagFilePath + ".xlsx");
                 }
             }
         }
