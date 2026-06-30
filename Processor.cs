@@ -297,26 +297,6 @@ namespace WinFormsApp1
                                 _ => XLColor.FromHtml("#FFC7CE")
                             };
                         }
-
-                        //List<WorkStatus> StudStat = list[i].Results.Values.ToList();
-                        //for (int j = 0; j < StudStat.Count; j++)
-                        //{
-                        //    var cell = worksheet.Cell(i + 2, 5 + (j + 1));
-                        //    cell.Value = StudStat[j].ToString().Replace("_", " ");
-
-                        //    if (StudStat[j] == WorkStatus.Зачтено)
-                        //    {
-                        //        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#C6EFCE");
-                        //    }
-                        //    else if (StudStat[j] == WorkStatus.На_проверке)
-                        //    {
-                        //        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFEB9D");
-                        //    }
-                        //    else
-                        //    {
-                        //        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFC7CE");
-                        //    }
-                        //}
                         row++;
                     }
 

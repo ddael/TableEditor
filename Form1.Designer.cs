@@ -98,7 +98,7 @@
             FormBorderStyle = FormBorderStyle.FixedSingle;
             MaximizeBox = false;
             Name = "Form1";
-            Text = "Вычищатель таблиц 1.0";
+            Text = "Вычищатель таблиц";
             ((System.ComponentModel.ISupportInitialize)filteredGrid).EndInit();
             ResumeLayout(false);
             PerformLayout();
