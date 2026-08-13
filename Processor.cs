@@ -218,12 +218,11 @@ namespace WinFormsApp1
 
         public static void WriteFilesToDir(string filePath, List<Student> Students)
         {
-            // Формируем словарь: Ключ - Кластер, Занчение - Список учащихся в кластере
-            var groupedByCluster = Students
-                .GroupBy(student => student.Cluster)
-                .ToDictionary(grouped => grouped.Key, grouped => grouped.ToList());
-
-            // Делаем суперсловарь (Кластер - Словарь(Тег - Список учащихся))
+            // Делаем суперсловарь: (
+            // Ключ - Кластер,
+            // Значение - Словарь:
+            // (Ключ - Тег, Значение - Список учащихся)
+            // )
             var filteredStudents = Students
                 .GroupBy(student => student.Cluster)
                 .ToDictionary(
@@ -249,7 +248,6 @@ namespace WinFormsApp1
                 foreach (var (tagKey, list) in dict)
                 {
                     var tag = tagKey;
-                    var studentsByTag = tag.ToList();
 
                     // Формируем имя файла
                     string FileName = $"{tag}_{cluster}";
