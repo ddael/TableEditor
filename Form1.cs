@@ -97,6 +97,9 @@ namespace WinFormsApp1
                 {
                     Processor.WriteToFile(dialog.FileName, data);
                     MessageBox.Show("Файл сохранён.");
+                    data = [];
+                    filtered = [];
+                    filteredGrid.DataSource = null;
                 }
             }
             else
