@@ -33,6 +33,7 @@
             filteredGrid = new DataGridView();
             label1 = new Label();
             checkBox1 = new CheckBox();
+            checkBox2 = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)filteredGrid).BeginInit();
             SuspendLayout();
             // 
@@ -77,7 +78,7 @@
             // checkBox1
             // 
             checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(299, 370);
+            checkBox1.Location = new Point(299, 358);
             checkBox1.Name = "checkBox1";
             checkBox1.Size = new Size(189, 19);
             checkBox1.TabIndex = 5;
@@ -85,11 +86,23 @@
             checkBox1.UseVisualStyleBackColor = true;
             checkBox1.CheckedChanged += checkBox1_CheckedChanged;
             // 
+            // checkBox2
+            // 
+            checkBox2.AutoSize = true;
+            checkBox2.Location = new Point(299, 383);
+            checkBox2.Name = "checkBox2";
+            checkBox2.Size = new Size(175, 19);
+            checkBox2.TabIndex = 6;
+            checkBox2.Text = "Регионы вместо кластеров";
+            checkBox2.UseVisualStyleBackColor = true;
+            checkBox2.CheckedChanged += checkBox2_CheckedChanged;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(784, 421);
+            Controls.Add(checkBox2);
             Controls.Add(checkBox1);
             Controls.Add(label1);
             Controls.Add(filteredGrid);
@@ -111,5 +124,6 @@
         private DataGridView filteredGrid;
         private Label label1;
         private CheckBox checkBox1;
+        private CheckBox checkBox2;
     }
 }

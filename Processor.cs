@@ -9,10 +9,25 @@ namespace WinFormsApp1
         [GeneratedRegex(@"([а-яА-ЯёЁ]{2,4})/(\d{2})")]
         private static partial Regex TagRegex();
         
-        [GeneratedRegex(@"\bкл_([1-9][0-9]{0,2})\b")]
-        private static partial Regex ClusterReg();
+        [GeneratedRegex(@"\bкл_([0-9]{1,2})\b")]
+        private static partial Regex ClusterRegex();
+
+        [GeneratedRegex(@"\bрег_([0-9]{1,2})\b")]
+        private static partial Regex RICRegex();
+
+        [GeneratedRegex(@"\b([а-яА-ЯёЁ]{2,4}_[а-яА-ЯёЁ]{2,4})_(\d{2})")]
+        private static partial Regex RICGroupRegex();
+
+        private readonly bool _multifile;
+        private readonly bool _RIC;
+
+        public Processor(bool flag1, bool flag2)
+        {
+            _multifile = flag1;
+            _RIC = flag2;
+        }
         
-        public static List<Student> ReadFromFile(string filePath)
+        public List<Student> ReadFromFile(string filePath)
         {
             var regFN = new Regex(@"ФИО");
             var indexFN = 0;
@@ -69,24 +84,31 @@ namespace WinFormsApp1
             {
                 var fullName = row.Cell(indexFN).GetString();
 
-                var tagRaw = row.Cell(indexTag).GetString()
-                    .Split(", ")
-                    .Select(s => s.Trim())
-                    .ToList();
-                var match = tagRaw
-                    .Select(m => TagRegex().Match(m))
-                    .FirstOrDefault(m => m.Success);
+
                 string tag = string.Empty;
                 int group = 0;
-                if (match is { Success : true })
+                string? cluster = string.Empty;
+
+                var tagRaw = row.Cell(indexTag).GetString()
+                    .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+                var groupRegex = _RIC ? RICGroupRegex() : TagRegex();
+                var clusterRegex = _RIC ? RICRegex() : ClusterRegex();
+
+                var groupMatch = tagRaw
+                    .Select(m => groupRegex.Match(m))
+                    .FirstOrDefault(m => m.Success);
+
+                if (groupMatch is { Success : true })
                 {
-                    tag = match.Groups[1].Value;
-                    group = int.Parse(match.Groups[2].Value);
+                    tag = groupMatch.Groups[1].Value;
+                    group = int.Parse(groupMatch.Groups[2].Value);
                 }
-                var cluster = tagRaw
-                    .Select(c => ClusterReg().Match(c))
+
+                cluster = tagRaw
+                    .Select(c => clusterRegex.Match(c))
                     .FirstOrDefault(m => m.Success)?.Value;
-                
+
                 var region = row.Cell(indexRegion).GetString();
                 
                 var cohort = row.Cell(indexCohort).GetString();
@@ -123,14 +145,14 @@ namespace WinFormsApp1
             return result;
         }
 
-        public static void WriteToFile(string filePath, List<Student> Students)
+        public void WriteToFile(string filePath, List<Student> Students)
         {
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Filtered");
 
             // Write header
             worksheet.Cell(1, 1).Value = "ФИО";
-            worksheet.Cell(1, 2).Value = "Кластер";
+            worksheet.Cell(1, 2).Value = _RIC ? "Код региона" : "Кластер";
             worksheet.Cell(1, 3).Value = "Группа";
             worksheet.Cell(1, 4).Value = "Поток";
             worksheet.Cell(1, 5).Value = "Регион";
@@ -147,8 +169,8 @@ namespace WinFormsApp1
             {
                 worksheet.Cell(i + 2, 1).Value = Students[i].FullName;
                 worksheet.Cell(i + 2, 2).Value = Students[i].Cluster;
-                worksheet.Cell(i + 2, 3).Value = Students[i].GetFullGroup();
-                Console.WriteLine(Students[i].GetFullGroup());
+                worksheet.Cell(i + 2, 3).Value = _RIC ? Students[i].GetFullGroup('_') : Students[i].GetFullGroup('/');
+                //Console.WriteLine(_RIC ? Students[i].GetFullGroup('_') : Students[i].GetFullGroup('/'));
                 worksheet.Cell(i + 2, 4).Value = Students[i].Cohort;
                 worksheet.Cell(i + 2, 5).Value = Students[i].Region;
                 worksheet.Cell(i + 2, 6).Value = Students[i].GetRatio();
@@ -216,7 +238,7 @@ namespace WinFormsApp1
                 );
         }
 
-        public static void WriteFilesToDir(string filePath, List<Student> Students)
+        public void WriteFilesToDir(string filePath, List<Student> Students)
         {
             // Делаем суперсловарь: (
             // Ключ - Кластер,
@@ -260,7 +282,7 @@ namespace WinFormsApp1
 
                     int col = 1;
                     worksheet.Cell(1, col++).Value = "ФИО";
-                    worksheet.Cell(1, col++).Value = "Кластер";
+                    worksheet.Cell(1, col++).Value = _RIC ? "Код региона" : "Кластер";
                     worksheet.Cell(1, col++).Value = "Группа";
                     worksheet.Cell(1, col++).Value = "Регион";
                     worksheet.Cell(1, col++).Value = "Кол-во\nсданных\nработ";
@@ -279,7 +301,7 @@ namespace WinFormsApp1
                         col = 1;
                         worksheet.Cell(row, col++).Value = stud.FullName;
                         worksheet.Cell(row, col++).Value = stud.Cluster;
-                        worksheet.Cell(row, col++).Value = stud.GetFullGroup();
+                        worksheet.Cell(row, col++).Value = _RIC ? stud.GetFullGroup('_') : stud.GetFullGroup('/');
                         worksheet.Cell(row, col++).Value = stud.Region;
                         worksheet.Cell(row, col++).Value = stud.GetRatio();
 

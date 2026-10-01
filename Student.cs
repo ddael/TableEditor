@@ -22,13 +22,13 @@ namespace WinFormsApp1
             return Results.Count(pair => pair.Value == WorkStatus.Зачтено);
         }
 
-        public string? GetFullGroup()
+        public string? GetFullGroup(char splitter)
         {
             if (Tag == null || Group == 0)
             {
                 return null;
             }
-            return $"{Tag}/{Group:D2}";
+            return $"{Tag}{splitter}{Group:D2}";
         }
 
     }
