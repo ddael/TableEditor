@@ -22,7 +22,7 @@ namespace WinFormsApp1
         private readonly bool _RIC;
 
         public Processor(bool flag1, bool flag2)
-        {
+        { 
             _multifile = flag1;
             _RIC = flag2;
         }
