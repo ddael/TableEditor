@@ -11,24 +11,25 @@ namespace WinFormsApp1
         public string Region { get; set; } = string.Empty;
         public string Cohort { get; set; } = string.Empty;
         public string Tag { get; set; } = string.Empty;
-        public Dictionary<string, WorkStatus> Results { get; set; }
-        
+        public Results Results { get; set; } = [];
+
         public int GetRatio()
         {
-            if (Results == null)
-            {
-                return 0;
-            }
-            return Results.Count(pair => pair.Value == WorkStatus.Зачтено);
+            return Results.Ratio;
         }
 
         public string? GetFullGroup(char splitter)
         {
-            if (Tag == null || Group == 0)
+            if (string.IsNullOrEmpty(Tag) || Group == 0)
             {
                 return null;
             }
             return $"{Tag}{splitter}{Group:D2}";
+        }
+
+        public Results FilterKeys(string pattern)
+        {
+            return Results.Filter(pattern);
         }
 
     }

@@ -20,11 +20,13 @@ namespace WinFormsApp1
 
         private readonly bool _multifile;
         private readonly bool _RIC;
+        private readonly bool _certification;
 
-        public Processor(bool flag1, bool flag2)
+        public Processor(bool flag1, bool flag2, bool flag3)
         { 
             _multifile = flag1;
             _RIC = flag2;
+            _certification = flag3;
         }
         
         public List<Student> ReadFromFile(string filePath)
@@ -138,7 +140,7 @@ namespace WinFormsApp1
                     Tag = tag,
                     Region = region,
                     Cohort = cohort,
-                    Results = ConvertDictionary(results)
+                    Results = ConvertToResults(results)
                 });
             }
 
@@ -151,51 +153,56 @@ namespace WinFormsApp1
             var worksheet = workbook.Worksheets.Add("Filtered");
 
             // Write header
-            worksheet.Cell(1, 1).Value = "ФИО";
-            worksheet.Cell(1, 2).Value = _RIC ? "Код региона" : "Кластер";
-            worksheet.Cell(1, 3).Value = "Группа";
-            worksheet.Cell(1, 4).Value = "Поток";
-            worksheet.Cell(1, 5).Value = "Регион";
-            worksheet.Cell(1, 6).Value = "Кол-во\nсданных\nработ";
-            List<string> Headers = Students[1].Results.Keys.ToList();
+            int col = 1;
+            worksheet.Cell(1, col++).Value = "ФИО";
+            worksheet.Cell(1, col++).Value = _RIC ? "Код региона" : "Кластер";
+            worksheet.Cell(1, col++).Value = "Группа";
+            worksheet.Cell(1, col++).Value = "Поток";
+            worksheet.Cell(1, col++).Value = "Регион";
+            worksheet.Cell(1, col++).Value = "Кол-во\nсданных\nработ";
 
-            for (int i = 0; i < Headers.Count; i++)
+            (int, int) WorkIndexes;
+            WorkIndexes.Item1 = col;
+
+            var filterKey = "Аттестация";
+
+            foreach(var workName in _certification 
+                ? Students[1].FilterKeys(filterKey).Keys 
+                : Students[1].Results.Keys)
             {
-                worksheet.Cell(1, 6 + (i + 1)).Value = Headers[i];
+                worksheet.Cell(1, col++).Value = workName;
             }
+            WorkIndexes.Item2 = col - 1;
 
-            // Write data
-            for (int i = 0; i < Students.Count; i++)
+            int row = 2;
+            foreach(var stud in Students)
             {
-                worksheet.Cell(i + 2, 1).Value = Students[i].FullName;
-                worksheet.Cell(i + 2, 2).Value = Students[i].Cluster;
-                worksheet.Cell(i + 2, 3).Value = _RIC ? Students[i].GetFullGroup('_') : Students[i].GetFullGroup('/');
-                //Console.WriteLine(_RIC ? Students[i].GetFullGroup('_') : Students[i].GetFullGroup('/'));
-                worksheet.Cell(i + 2, 4).Value = Students[i].Cohort;
-                worksheet.Cell(i + 2, 5).Value = Students[i].Region;
-                worksheet.Cell(i + 2, 6).Value = Students[i].GetRatio();
-                List<WorkStatus> StudStat = Students[i].Results.Values.ToList();
-                for (int j = 0; j < StudStat.Count; j++)
+                col = 1;
+                worksheet.Cell(row, col++).Value = stud.FullName;
+                worksheet.Cell(row, col++).Value = stud.Cluster;
+                worksheet.Cell(row, col++).Value = _RIC ? stud.GetFullGroup('_') : stud.GetFullGroup('/');
+                worksheet.Cell(row, col++).Value = stud.Cohort;
+                worksheet.Cell(row, col++).Value = stud.Region;
+                worksheet.Cell(row, col++).Value = _certification ? stud.FilterKeys(filterKey).Ratio : stud.GetRatio();
+
+                foreach (var workValue in _certification
+                    ? stud.FilterKeys(filterKey).Values
+                    : stud.Results.Values)
                 {
-                    var cell = worksheet.Cell(i + 2, 6 + (j + 1));
-                    cell.Value = StudStat[j].ToString().Replace("_", " ");
+                    var cell = worksheet.Cell(row, col++);
+                    cell.Value = workValue.ToString().Replace("_", " ");
 
-                    if (StudStat[j] == WorkStatus.Зачтено)
+                    cell.Style.Fill.BackgroundColor = workValue switch
                     {
-                        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#C6EFCE");
-                    }
-                    else if (StudStat[j] == WorkStatus.На_проверке)
-                    {
-                        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFEB9D");
-                    }
-                    else
-                    {
-                        cell.Style.Fill.BackgroundColor = XLColor.FromHtml("#FFC7CE");
-                    }
+                        WorkStatus.Зачтено => XLColor.FromHtml("#C6EFCE"),
+                        WorkStatus.На_проверке => XLColor.FromHtml("#FFEB9D"),
+                        _ => XLColor.FromHtml("#FFC7CE")
+                    };
                 }
+                row++;
             }
 
-            var table = worksheet.Range(1, 1, Students.Count + 1, Headers.Count + 6).AsTable();
+            var table = worksheet.Range(1, 1, row - 1, WorkIndexes.Item2).AsTable();
             table.Name = "Учащиеся";
             table.ShowAutoFilter = true;
             table.Style.Border.SetOutsideBorder(XLBorderStyleValues.Thin);
@@ -206,13 +213,11 @@ namespace WinFormsApp1
             worksheet.Row(1).AdjustToContents();
             worksheet.Row(1).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
             worksheet.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            worksheet.Row(1).Style.Font.Bold = true; 
+            worksheet.Row(1).Style.Font.Bold = true;
 
-            worksheet.Columns(1, 6).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-
-            int lastColumn = 7 + (Students.Count > 0 ? Students[0].Results.Count : 0);
-            worksheet.Columns(7, lastColumn).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            worksheet.Columns(7, lastColumn).Width = 20;
+            worksheet.Columns(1, WorkIndexes.Item1 - 1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.Columns(WorkIndexes.Item1, WorkIndexes.Item2).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.Columns(WorkIndexes.Item1, WorkIndexes.Item2).Width = 20;
 
             workbook.SaveAs(filePath);
         }
@@ -230,12 +235,13 @@ namespace WinFormsApp1
             };
         }
 
-        private static Dictionary<string, WorkStatus> ConvertDictionary(Dictionary<string, string> stringDict)
+        private static Results ConvertToResults(Dictionary<string, string> stringDict)
         {
-            return stringDict.ToDictionary(
-                kvp => kvp.Key,
-                kvp => ConvertToWorkStatus(kvp.Value)
-                );
+            return new Results(
+                stringDict.ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => ConvertToWorkStatus(kvp.Value)
+                    ));
         }
 
         public void WriteFilesToDir(string filePath, List<Student> Students)

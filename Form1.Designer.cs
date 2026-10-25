@@ -34,6 +34,7 @@
             label1 = new Label();
             checkBox1 = new CheckBox();
             checkBox2 = new CheckBox();
+            checkBox3 = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)filteredGrid).BeginInit();
             SuspendLayout();
             // 
@@ -78,7 +79,7 @@
             // checkBox1
             // 
             checkBox1.AutoSize = true;
-            checkBox1.Location = new Point(299, 358);
+            checkBox1.Location = new Point(299, 365);
             checkBox1.Name = "checkBox1";
             checkBox1.Size = new Size(189, 19);
             checkBox1.TabIndex = 5;
@@ -89,7 +90,7 @@
             // checkBox2
             // 
             checkBox2.AutoSize = true;
-            checkBox2.Location = new Point(299, 383);
+            checkBox2.Location = new Point(299, 390);
             checkBox2.Name = "checkBox2";
             checkBox2.Size = new Size(175, 19);
             checkBox2.TabIndex = 6;
@@ -97,11 +98,23 @@
             checkBox2.UseVisualStyleBackColor = true;
             checkBox2.CheckedChanged += checkBox2_CheckedChanged;
             // 
+            // checkBox3
+            // 
+            checkBox3.AutoSize = true;
+            checkBox3.Location = new Point(299, 340);
+            checkBox3.Name = "checkBox3";
+            checkBox3.Size = new Size(127, 19);
+            checkBox3.TabIndex = 7;
+            checkBox3.Text = "Режим аттестации";
+            checkBox3.UseVisualStyleBackColor = true;
+            checkBox3.CheckedChanged += checkBox3_CheckedChanged;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(784, 421);
+            Controls.Add(checkBox3);
             Controls.Add(checkBox2);
             Controls.Add(checkBox1);
             Controls.Add(label1);
@@ -125,5 +138,6 @@
         private Label label1;
         private CheckBox checkBox1;
         private CheckBox checkBox2;
+        private CheckBox checkBox3;
     }
 }

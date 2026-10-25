@@ -1,11 +1,10 @@
-﻿using DocumentFormat.OpenXml.Drawing;
-
-namespace WinFormsApp1
+﻿namespace WinFormsApp1
 {
     public partial class Form1 : Form
     {
         private bool MultiFileMode { get; set; } = false;
         private bool RegionInsteadCluster { get; set; } = false;
+        private bool CertificationMode { get; set; } = false;
 
         private List<Student> data = [];
         private List<Student> filtered = [];
@@ -27,7 +26,7 @@ namespace WinFormsApp1
                     Name = System.IO.Path.GetFileNameWithoutExtension(dialog.SafeFileName);
                     //data = Processor.ReadFromFile(dialog.FileName); статическая версия
 
-                    Processor processor = new Processor(MultiFileMode, RegionInsteadCluster);
+                    Processor processor = new Processor(MultiFileMode, RegionInsteadCluster, CertificationMode);
                     data = processor.ReadFromFile(dialog.FileName);
 
                     filtered = data.Select(s => new Student
@@ -52,11 +51,11 @@ namespace WinFormsApp1
             else
             {
                 using var dialog = new OpenFileDialog { Filter = "Excel Files|*.xlsx;*.xls", Multiselect = true };
-                
+
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
                     var fileNames = dialog.FileNames;
-                    Processor processor = new Processor(MultiFileMode, RegionInsteadCluster);
+                    Processor processor = new Processor(MultiFileMode, RegionInsteadCluster, CertificationMode);
 
                     foreach (var file in fileNames)
                     {
@@ -101,7 +100,7 @@ namespace WinFormsApp1
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    Processor processor = new Processor(MultiFileMode, RegionInsteadCluster);
+                    Processor processor = new Processor(MultiFileMode, RegionInsteadCluster, CertificationMode);
                     processor.WriteToFile(dialog.FileName, data);
                     MessageBox.Show("Файл сохранён.");
                     data = [];
@@ -126,7 +125,7 @@ namespace WinFormsApp1
                 if (folderDialog.ShowDialog() == DialogResult.OK)
                 {
                     //var folder = folderDialog.SelectedPath;
-                    Processor processor = new Processor(MultiFileMode, RegionInsteadCluster);
+                    Processor processor = new Processor(MultiFileMode, RegionInsteadCluster, CertificationMode);
                     processor.WriteFilesToDir(folderDialog.SelectedPath, data);
                     MessageBox.Show("Работа сделана.");
                     data = [];
@@ -144,6 +143,11 @@ namespace WinFormsApp1
         private void checkBox2_CheckedChanged(object sender, EventArgs e)
         {
             RegionInsteadCluster = checkBox2.Checked;
+        }
+
+        private void checkBox3_CheckedChanged(object sender, EventArgs e)
+        {
+            CertificationMode = checkBox3.Checked;
         }
     }
 }
