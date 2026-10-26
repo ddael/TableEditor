@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using System.Collections;
 
 namespace WinFormsApp1
 {
@@ -18,6 +19,30 @@ namespace WinFormsApp1
                     .Where(kv => kv.Key.Contains(pattern, StringComparison.Ordinal))
                     .ToDictionary(kv => kv.Key, kv => kv.Value)
                     );
+        }
+
+        public Results Filter(params string[] patterns)
+        {
+            return Filter((IEnumerable<string>)patterns);
+        }
+
+        public Results Filter(IEnumerable<string> patterns)
+        {
+            ArgumentNullException.ThrowIfNull(patterns);
+
+            var list = patterns
+                .Where(p => !string.IsNullOrEmpty(p))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
+
+            if (list.Length == 0)
+            {
+                return new Results();
+            }
+
+            return new (_items
+                .Where(kv => list.Any(p => kv.Key.Contains(p, StringComparison.Ordinal)))
+                .ToDictionary(kv => kv.Key, kv => kv.Value));
         }
 
         public int Count => _items.Count;

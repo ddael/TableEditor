@@ -164,10 +164,10 @@ namespace WinFormsApp1
             (int, int) WorkIndexes;
             WorkIndexes.Item1 = col;
 
-            var filterKey = "Аттестация";
+            string[] filterKey = [ "Аттестация", "ИАР" ];
 
             foreach(var workName in _certification 
-                ? Students[1].FilterKeys(filterKey).Keys 
+                ? Students[1].Results.Filter(filterKey).Keys 
                 : Students[1].Results.Keys)
             {
                 worksheet.Cell(1, col++).Value = workName;
@@ -183,10 +183,10 @@ namespace WinFormsApp1
                 worksheet.Cell(row, col++).Value = _RIC ? stud.GetFullGroup('_') : stud.GetFullGroup('/');
                 worksheet.Cell(row, col++).Value = stud.Cohort;
                 worksheet.Cell(row, col++).Value = stud.Region;
-                worksheet.Cell(row, col++).Value = _certification ? stud.FilterKeys(filterKey).Ratio : stud.GetRatio();
+                worksheet.Cell(row, col++).Value = _certification ? stud.Results.Filter(filterKey).Ratio : stud.GetRatio();
 
                 foreach (var workValue in _certification
-                    ? stud.FilterKeys(filterKey).Values
+                    ? stud.Results.Filter(filterKey).Values
                     : stud.Results.Values)
                 {
                     var cell = worksheet.Cell(row, col++);
