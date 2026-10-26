@@ -9,7 +9,7 @@ namespace WinFormsApp1
         [GeneratedRegex(@"([а-яА-ЯёЁ]{2,4})/(\d{2})")]
         private static partial Regex TagRegex();
         
-        [GeneratedRegex(@"\bкл_([0-9]{1,2})\b")]
+        [GeneratedRegex(@"\bкл_([0-9]{1,3})\b")]
         private static partial Regex ClusterRegex();
 
         [GeneratedRegex(@"\bрег_([0-9]{1,2})\b")]
